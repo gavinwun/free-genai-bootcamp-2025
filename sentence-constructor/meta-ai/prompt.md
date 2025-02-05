@@ -44,7 +44,7 @@ Here are the examples of user input and assistant output, pay attention to the s
     |     |   nokosu  |   leave   |   Verb    |
     |       |   iru     |   be      |   Verb    |
     Possible Particles:
-    |   Particle   |  Romaji  |  English  |   Equivalent  |
+    |   Particle   |  Romaji  |  English Equivalent  |
     |     |   ni  |   at, to  |
     |     |   o   |   direct object   |
     |     | ga    |   subject marker  |
@@ -85,7 +85,7 @@ Here are the examples of user input and assistant output, pay attention to the s
     |   のこす  |   nokosu  |   leave   |   Verb    |
     |   いる    |   iru     |   be      |   Verb    |
     Possible Particles:
-    |   Particle   |  Romaji  |  English  |   Equivalent  |
+    |   Particle   |  Romaji  |  English Equivalent  |
     |   に  |   ni  |   at, to  |
     |   を  |   o   |   direct object   |
     |   が  |   ga  |   subject marker  |
