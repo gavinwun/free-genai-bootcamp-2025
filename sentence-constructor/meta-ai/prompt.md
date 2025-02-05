@@ -105,3 +105,5 @@ Here are the examples of user input and assistant output, pay attention to the s
     (Remember, I'll guide you through it, but I won't give away the final answer!)
     </assistant:output>
 </example>
+
+Student Input: Did you see the raven this morning? They were looking at our garden.
