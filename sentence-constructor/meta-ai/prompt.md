@@ -19,6 +19,7 @@ Beginner, JLPT5
 - The table of vocabulary should only have the following columns: Japanese, Rojami, English, Parts of Speech
 - A possible list of particles table below the vocabulary table
 - Do not use romaji when showing japanese except in the vocabulary table and particles table
+- Always provide an example
 
 ## Examples
 
