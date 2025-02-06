@@ -42,6 +42,28 @@ The formatted output will generally contain three parts:
 ### Sentence Structure
 
 - Do not provide particles in the sentence structure
+- Do not provide tenses or conjugations in the sentence structure
+- Remember to consider beginner level sentence structures
+
+Here is a list of example of simple sentence structures.
+
+- I am a student → [Subject] [Noun] です
+- This book is interesting → [Subject] [い-Adjective] です
+- She is a quiet person → [Subject] [な-Adjective] な [Noun] です
+- The raven is in the garden → [Location] [Object] います
+- There is a tree in the park → [Location] [Object] あります
+- I read books → [Subject] [Object] を [Verb]
+- I go to school → [Subject] [Destination] に/へ [Verb]
+- Is this your book? → [Object] です か？
+- I like sushi → [Subject] [Object] が 好き です
+- He can speak Japanese → [Subject] [Activity] が できます
+- I wake up at 7 AM → [Time] に [Subject] [Verb]
+- I want to go to Japan → [Verb Stem] たい です
+- Let's watch a movie → [Verb Stem] ましょう
+- Because it’s raining, I won’t go outside → [Reason] から [Result]
+- Please read this → [Verb-て Form] ください
+- Did you eat the food? → [Object] [Verb-past] か？
+- Eat too much → [Verb Stem] すぎる
 
 ### Clues and Considerations
 
