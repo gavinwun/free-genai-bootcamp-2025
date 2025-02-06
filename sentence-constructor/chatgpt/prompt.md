@@ -33,7 +33,7 @@ The formatted output will generally contain three parts:
 - The table should only include nouns, verbs, adverbs, adjectives
 - Do not provide particles in the vocabulary table, student needs to figure out the correct particles to use
 - The table of vocabulary should only have the following columns: Japanese, Romaji, English, Parts of Speech
-- Ensure there are no repeats of the same japanese word
+- Ensure there are no repeats of the same japanese word. E.g. if there are two 見る, one is for see and another is for look at, it is fine to use 見る and みている to separate the word's meaning
 
 ### Possible list of particles table
 
