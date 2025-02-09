@@ -13,8 +13,8 @@ The endpoint will create a new study session for a specific group and study acti
 ## Implementation Steps
 
 ### 1. Add the Route
-- [ ] Add the `@app.route` decorator with POST method
-- [ ] Add the `@cross_origin()` decorator for CORS support
+- [x] Add the `@app.route` decorator with POST method
+- [x] Add the `@cross_origin()` decorator for CORS support
 ```python
 @app.route('/api/study-sessions', methods=['POST'])
 @cross_origin()
