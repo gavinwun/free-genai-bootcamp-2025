@@ -12,9 +12,19 @@ def load(app):
   def create_study_session():
     try:
       # Get request data
-      data = request.get_json()
-      if not data:
+      if not request.is_json:
+        return jsonify({'error': 'Content-Type must be application/json'}), 400
+      
+      try:
+        data = request.get_json()
+      except:
+        return jsonify({'error': 'Invalid JSON data'}), 400
+        
+      if data is None:
         return jsonify({'error': 'No data provided'}), 400
+      
+      if not data:  # Empty JSON object
+        return jsonify({'error': 'Missing required field: group_id'}), 400
 
       # Define required fields and their types
       required_fields = {
