@@ -3,6 +3,7 @@ from datetime import datetime
 import json
 import os
 import sys
+from lib.db import Db
 
 # Add the parent directory to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -25,22 +26,13 @@ def app():
     ctx.push()
     
     # Set up test database
-    cursor = app.db.cursor()
+    db = app.db
+    cursor = db.cursor()
     
-    # Create required tables if they don't exist
+    # Create required tables using SQL files
+    cursor.executescript(db.sql('setup/create_table_groups.sql'))
+    cursor.executescript(db.sql('setup/create_table_study_activities.sql'))
     cursor.executescript('''
-        CREATE TABLE IF NOT EXISTS groups (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            description TEXT
-        );
-        
-        CREATE TABLE IF NOT EXISTS study_activities (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            description TEXT
-        );
-        
         CREATE TABLE IF NOT EXISTS study_sessions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             group_id INTEGER NOT NULL,
@@ -56,19 +48,19 @@ def app():
             FOREIGN KEY (study_session_id) REFERENCES study_sessions(id)
         );
     ''')
-    app.db.commit()
+    db.commit()
     
     yield app
     
     # Clean up test database after tests
-    cursor = app.db.cursor()
+    cursor = db.cursor()
     cursor.executescript('''
         DELETE FROM word_review_items;
         DELETE FROM study_sessions;
         DELETE FROM groups;
         DELETE FROM study_activities;
     ''')
-    app.db.commit()
+    db.commit()
     
     # Pop the application context
     ctx.pop()
@@ -81,23 +73,24 @@ def client(app):
 def test_create_study_session_success(client, app):
     """Test successful creation of a study session"""
     # First create test data
-    cursor = app.db.cursor()
+    db = app.db
+    cursor = db.cursor()
     
     # Create a test group
     cursor.execute('''
-        INSERT INTO groups (name, description) 
-        VALUES (?, ?)
-    ''', ('Test Group', 'A test group'))
+        INSERT INTO groups (name) 
+        VALUES (?)
+    ''', ('Test Group',))
     group_id = cursor.lastrowid
     
     # Create a test study activity
     cursor.execute('''
-        INSERT INTO study_activities (name, description) 
+        INSERT INTO study_activities (name, url) 
         VALUES (?, ?)
-    ''', ('Test Activity', 'A test activity'))
+    ''', ('Test Activity', 'https://example.com/activity'))
     activity_id = cursor.lastrowid
     
-    app.db.commit()
+    db.commit()
 
     # Test creating a study session
     response = client.post('/api/study-sessions', json={
@@ -118,7 +111,7 @@ def test_create_study_session_success(client, app):
     assert data['review_items_count'] == 0
     
     # Verify data was actually saved
-    cursor = app.db.cursor()
+    cursor = db.cursor()
     cursor.execute('SELECT * FROM study_sessions WHERE id = ?', (data['id'],))
     session = cursor.fetchone()
     assert session is not None
@@ -128,13 +121,14 @@ def test_create_study_session_success(client, app):
 def test_create_study_session_invalid_request(client, app):
     """Test study session creation with invalid request data"""
     # Create a valid activity first for type validation test
-    cursor = app.db.cursor()
+    db = app.db
+    cursor = db.cursor()
     cursor.execute('''
-        INSERT INTO study_activities (name, description) 
+        INSERT INTO study_activities (name, url) 
         VALUES (?, ?)
-    ''', ('Test Activity', 'A test activity'))
+    ''', ('Test Activity', 'https://example.com/activity'))
     valid_activity_id = cursor.lastrowid
-    app.db.commit()
+    db.commit()
     
     # Test missing required field
     response = client.post('/api/study-sessions', json={
@@ -156,6 +150,44 @@ def test_create_study_session_invalid_request(client, app):
     response = client.post('/api/study-sessions', json={})
     assert response.status_code == 400
     assert b'Missing required field: group_id' in response.data
+
+def test_create_study_session_nonexistent_references(client, app):
+    """Test study session creation with non-existent group or activity IDs"""
+    # Create a valid group and activity first
+    db = app.db
+    cursor = db.cursor()
+    
+    # Create a test group
+    cursor.execute('''
+        INSERT INTO groups (name) 
+        VALUES (?)
+    ''', ('Test Group',))
+    valid_group_id = cursor.lastrowid
+    
+    # Create a test study activity
+    cursor.execute('''
+        INSERT INTO study_activities (name, url) 
+        VALUES (?, ?)
+    ''', ('Test Activity', 'https://example.com/activity'))
+    valid_activity_id = cursor.lastrowid
+    
+    db.commit()
+    
+    # Test non-existent group
+    response = client.post('/api/study-sessions', json={
+        'group_id': 99999,  # Non-existent group ID
+        'study_activity_id': valid_activity_id
+    })
+    assert response.status_code == 404
+    assert b'Group with id' in response.data
+    
+    # Test non-existent activity
+    response = client.post('/api/study-sessions', json={
+        'group_id': valid_group_id,
+        'study_activity_id': 99999  # Non-existent activity ID
+    })
+    assert response.status_code == 404
+    assert b'Study activity with id' in response.data
 
 def test_create_study_session_invalid_json(client, app):
     """Test study session creation with invalid JSON data"""
@@ -179,40 +211,3 @@ def test_create_study_session_invalid_json(client, app):
                          content_type='application/json')
     assert response.status_code == 400
     assert b'No data provided' in response.data
-
-def test_create_study_session_nonexistent_references(client, app):
-    """Test study session creation with non-existent group or activity IDs"""
-    # Create a valid group and activity first
-    cursor = app.db.cursor()
-    
-    # Create a test group
-    cursor.execute('''
-        INSERT INTO groups (name, description) 
-        VALUES (?, ?)
-    ''', ('Test Group', 'A test group'))
-    valid_group_id = cursor.lastrowid
-    
-    # Create a test study activity
-    cursor.execute('''
-        INSERT INTO study_activities (name, description) 
-        VALUES (?, ?)
-    ''', ('Test Activity', 'A test activity'))
-    valid_activity_id = cursor.lastrowid
-    
-    app.db.commit()
-    
-    # Test non-existent group
-    response = client.post('/api/study-sessions', json={
-        'group_id': 99999,  # Non-existent group ID
-        'study_activity_id': valid_activity_id
-    })
-    assert response.status_code == 404
-    assert b'Group with id' in response.data
-    
-    # Test non-existent activity
-    response = client.post('/api/study-sessions', json={
-        'group_id': valid_group_id,
-        'study_activity_id': 99999  # Non-existent activity ID
-    })
-    assert response.status_code == 404
-    assert b'Study activity with id' in response.data
