@@ -29,26 +29,8 @@ def app():
     db = app.db
     cursor = db.cursor()
     
-    # Create required tables using SQL files
-    cursor.executescript(db.sql('setup/create_table_groups.sql'))
-    cursor.executescript(db.sql('setup/create_table_study_activities.sql'))
-    cursor.executescript('''
-        CREATE TABLE IF NOT EXISTS study_sessions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            group_id INTEGER NOT NULL,
-            study_activity_id INTEGER NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (group_id) REFERENCES groups(id),
-            FOREIGN KEY (study_activity_id) REFERENCES study_activities(id)
-        );
-        
-        CREATE TABLE IF NOT EXISTS word_review_items (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            study_session_id INTEGER NOT NULL,
-            FOREIGN KEY (study_session_id) REFERENCES study_sessions(id)
-        );
-    ''')
-    db.commit()
+    # Create all tables using the setup_tables method
+    db.setup_tables(cursor)
     
     yield app
     
