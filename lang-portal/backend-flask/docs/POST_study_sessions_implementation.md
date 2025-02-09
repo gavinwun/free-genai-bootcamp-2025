@@ -36,14 +36,14 @@ def create_study_session():
 - [x] Return 400 Bad Request if validation fails
 
 ### 3. Database Operations
-- [ ] Create SQL insert statement for study_sessions table:
+- [x] Create SQL insert statement for study_sessions table:
   ```sql
-  INSERT INTO study_sessions (group_id, study_activity_id, created_at)
-  VALUES (?, ?, ?)
+  INSERT INTO study_sessions (group_id, study_activity_id)
+  VALUES (?, ?)
   ```
-- [ ] Execute the insert with proper parameters
-- [ ] Get the ID of the newly created session
-- [ ] Fetch the complete session details using the new ID
+- [x] Execute the insert with proper parameters
+- [x] Get the ID of the newly created session
+- [x] Fetch the complete session details using the new ID
 
 ### 4. Response Formatting
 - [ ] Format the response JSON to match the GET endpoint format:
