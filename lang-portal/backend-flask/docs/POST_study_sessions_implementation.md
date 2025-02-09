@@ -24,16 +24,16 @@ def create_study_session():
 ```
 
 ### 2. Request Validation
-- [ ] Add validation for required fields in request body:
+- [x] Add validation for required fields in request body:
   ```python
   required_fields = {
       'group_id': int,
       'study_activity_id': int
   }
   ```
-- [ ] Check if all required fields are present
-- [ ] Validate field types
-- [ ] Return 400 Bad Request if validation fails
+- [x] Check if all required fields are present
+- [x] Validate field types
+- [x] Return 400 Bad Request if validation fails
 
 ### 3. Database Operations
 - [ ] Create SQL insert statement for study_sessions table:

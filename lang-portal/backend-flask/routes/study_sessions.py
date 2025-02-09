@@ -9,8 +9,33 @@ def load(app):
   @app.route('/api/study-sessions', methods=['POST'])
   @cross_origin()
   def create_study_session():
-    # Implementation will go here
-    pass
+    try:
+      # Get request data
+      data = request.get_json()
+      if not data:
+        return jsonify({'error': 'No data provided'}), 400
+
+      # Define required fields and their types
+      required_fields = {
+          'group_id': int,
+          'study_activity_id': int
+      }
+
+      # Validate presence and types of required fields
+      for field, field_type in required_fields.items():
+          if field not in data:
+              return jsonify({'error': f'Missing required field: {field}'}), 400
+          
+          try:
+              data[field] = field_type(data[field])
+          except (ValueError, TypeError):
+              return jsonify({'error': f'Invalid type for field {field}. Expected {field_type.__name__}'}), 400
+
+      # Implementation of database operations will go here
+      pass
+
+    except Exception as e:
+      return jsonify({'error': str(e)}), 500
 
   @app.route('/api/study-sessions', methods=['GET'])
   @cross_origin()
