@@ -46,24 +46,23 @@ def create_study_session():
 - [x] Fetch the complete session details using the new ID
 
 ### 4. Response Formatting
-- [ ] Format the response JSON to match the GET endpoint format:
+- [x] Format the response JSON to match the GET endpoint format:
   ```python
   {
-      'id': session_id,
-      'group_id': group_id,
-      'group_name': group_name,
-      'activity_id': activity_id,
-      'activity_name': activity_name,
-      'start_time': created_at,
-      'end_time': created_at,
-      'review_items_count': 0  # New session starts with 0 items
+    'id': session['id'],
+    'group_id': session['group_id'],
+    'group_name': session['group_name'],
+    'activity_id': session['activity_id'],
+    'activity_name': session['activity_name'],
+    'created_at': session['created_at'],
+    'review_items_count': session['review_items_count']
   }
   ```
 
 ### 5. Error Handling
-- [ ] Add try-except block for database operations
-- [ ] Handle foreign key constraint violations (invalid group_id or study_activity_id)
-- [ ] Return appropriate error messages and status codes
+- [x] Add try-except block for database operations
+- [x] Handle foreign key constraint violations (invalid group_id or study_activity_id)
+- [x] Return appropriate error messages and status codes
 
 ## Testing
 

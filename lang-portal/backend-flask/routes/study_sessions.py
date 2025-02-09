@@ -2,6 +2,7 @@ from flask import request, jsonify, g
 from flask_cors import cross_origin
 from datetime import datetime
 import math
+import sqlite3
 
 def load(app):
   # todo /study_sessions POST
@@ -33,54 +34,73 @@ def load(app):
 
       cursor = app.db.cursor()
       
-      # Insert new study session
-      cursor.execute('''
-        INSERT INTO study_sessions (group_id, study_activity_id)
-        VALUES (?, ?)
-      ''', (data['group_id'], data['study_activity_id']))
-      
-      # Get the ID of the newly created session
-      new_session_id = cursor.lastrowid
-      
-      # Fetch the complete session details
-      cursor.execute('''
-        SELECT 
-          ss.id,
-          ss.group_id,
-          g.name as group_name,
-          sa.id as activity_id,
-          sa.name as activity_name,
-          ss.created_at,
-          COUNT(wri.id) as review_items_count
-        FROM study_sessions ss
-        JOIN groups g ON g.id = ss.group_id
-        JOIN study_activities sa ON sa.id = ss.study_activity_id
-        LEFT JOIN word_review_items wri ON wri.study_session_id = ss.id
-        WHERE ss.id = ?
-        GROUP BY ss.id
-      ''', (new_session_id,))
-      
-      session = cursor.fetchone()
-      app.db.commit()
+      # Verify that group_id exists
+      cursor.execute('SELECT id FROM groups WHERE id = ?', (data['group_id'],))
+      if not cursor.fetchone():
+          return jsonify({'error': f'Group with id {data["group_id"]} does not exist'}), 404
 
-      if not session:
-        app.db.rollback()
-        return jsonify({'error': 'Failed to create study session'}), 500
+      # Verify that study_activity_id exists
+      cursor.execute('SELECT id FROM study_activities WHERE id = ?', (data['study_activity_id'],))
+      if not cursor.fetchone():
+          return jsonify({'error': f'Study activity with id {data["study_activity_id"]} does not exist'}), 404
+      
+      try:
+          # Insert new study session
+          cursor.execute('''
+            INSERT INTO study_sessions (group_id, study_activity_id)
+            VALUES (?, ?)
+          ''', (data['group_id'], data['study_activity_id']))
+          
+          # Get the ID of the newly created session
+          new_session_id = cursor.lastrowid
+          
+          # Fetch the complete session details
+          cursor.execute('''
+            SELECT 
+              ss.id,
+              ss.group_id,
+              g.name as group_name,
+              sa.id as activity_id,
+              sa.name as activity_name,
+              ss.created_at,
+              COUNT(wri.id) as review_items_count
+            FROM study_sessions ss
+            JOIN groups g ON g.id = ss.group_id
+            JOIN study_activities sa ON sa.id = ss.study_activity_id
+            LEFT JOIN word_review_items wri ON wri.study_session_id = ss.id
+            WHERE ss.id = ?
+            GROUP BY ss.id
+          ''', (new_session_id,))
+          
+          session = cursor.fetchone()
+          app.db.commit()
 
-      # Return the newly created session in the same format as GET endpoint
-      return jsonify({
-        'id': session['id'],
-        'group_id': session['group_id'],
-        'group_name': session['group_name'],
-        'activity_id': session['activity_id'],
-        'activity_name': session['activity_name'],
-        'created_at': session['created_at'],
-        'review_items_count': session['review_items_count']
-      })
+          if not session:
+            app.db.rollback()
+            return jsonify({'error': 'Failed to create study session'}), 500
+
+          # Return the newly created session in the same format as GET endpoint
+          return jsonify({
+            'id': session['id'],
+            'group_id': session['group_id'],
+            'group_name': session['group_name'],
+            'activity_id': session['activity_id'],
+            'activity_name': session['activity_name'],
+            'created_at': session['created_at'],
+            'review_items_count': session['review_items_count']
+          })
+
+      except sqlite3.IntegrityError as e:
+          app.db.rollback()
+          return jsonify({'error': 'Database integrity error. Please check if the provided IDs are valid.'}), 400
+      except sqlite3.Error as e:
+          app.db.rollback()
+          return jsonify({'error': f'Database error: {str(e)}'}), 500
 
     except Exception as e:
-      app.db.rollback()
-      return jsonify({'error': str(e)}), 500
+      if 'app.db' in locals():
+          app.db.rollback()
+      return jsonify({'error': f'Server error: {str(e)}'}), 500
 
   @app.route('/api/study-sessions', methods=['GET'])
   @cross_origin()
