@@ -58,7 +58,7 @@ def create_study_session_review(session_id):
 - [x] Update the study session status in study_sessions table
 
 ### 4. Response Formatting
-- [ ] Format the response JSON:
+- [x] Format the response JSON:
   ```python
   {
       "id": int,
@@ -69,12 +69,12 @@ def create_study_session_review(session_id):
       "created_at": datetime
   }
   ```
-- [ ] Return 201 Created status code with the response
+- [x] Return 201 Created status code with the response
 
 ### 5. Error Handling
-- [ ] Add try-except blocks for database operations
-- [ ] Handle case where session is already reviewed
-- [ ] Return appropriate error messages and status codes:
+- [x] Add try-except blocks for database operations
+- [x] Handle case where session is already reviewed
+- [x] Return appropriate error messages and status codes:
   - 400 for invalid input
   - 404 for session not found
   - 409 for already reviewed
