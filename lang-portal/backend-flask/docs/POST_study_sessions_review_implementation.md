@@ -81,18 +81,121 @@ def create_study_session_review(session_id):
   - 500 for server errors
 
 ### 6. Testing
-- [ ] Test with valid input
-- [ ] Test with invalid session ID
-- [ ] Test with missing required fields
-- [ ] Test with invalid rating values
-- [ ] Test with invalid completion status
-- [ ] Test reviewing same session multiple times
-- [ ] Test with very long feedback text
+- [x] Test with valid input
+- [x] Test with invalid session ID
+- [x] Test with missing required fields
+- [x] Test with invalid rating values
+- [x] Test with invalid completion status
+- [x] Test reviewing same session multiple times
+- [x] Test with very long feedback text
 
 ### 7. Documentation
-- [ ] Add API documentation with request/response examples
-- [ ] Document error scenarios and responses
-- [ ] Update API schema if using OpenAPI/Swagger
+- [x] Add API documentation with request/response examples
+- [x] Document error scenarios and responses
+- [x] Update API schema if using OpenAPI/Swagger
+
+## API Documentation
+
+### POST /api/study-sessions/:id/review
+
+Create a review for a specific study session.
+
+#### Request
+
+```http
+POST /api/study-sessions/123/review
+Content-Type: application/json
+
+{
+    "rating": 4,
+    "feedback": "Great study session! Learned a lot about kanji.",
+    "completion_status": "completed"
+}
+```
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| rating | integer | Yes | Rating score between 1-5 |
+| feedback | string | No | Optional feedback text |
+| completion_status | string | Yes | Must be either 'completed' or 'abandoned' |
+
+#### Successful Response
+
+```http
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{
+    "id": 456,
+    "session_id": 123,
+    "rating": 4,
+    "feedback": "Great study session! Learned a lot about kanji.",
+    "completion_status": "completed",
+    "created_at": "2025-02-16T19:39:50+13:00"
+}
+```
+
+#### Error Responses
+
+##### Invalid Request Format
+```http
+HTTP/1.1 400 Bad Request
+Content-Type: application/json
+
+{
+    "error": "Content-Type must be application/json"
+}
+```
+
+##### Missing Required Fields
+```http
+HTTP/1.1 400 Bad Request
+Content-Type: application/json
+
+{
+    "error": "Missing required field: rating"
+}
+```
+
+##### Invalid Field Values
+```http
+HTTP/1.1 400 Bad Request
+Content-Type: application/json
+
+{
+    "error": "Rating must be between 1 and 5"
+}
+```
+
+##### Non-existent Session
+```http
+HTTP/1.1 404 Not Found
+Content-Type: application/json
+
+{
+    "error": "Study session with id 123 not found"
+}
+```
+
+##### Duplicate Review
+```http
+HTTP/1.1 409 Conflict
+Content-Type: application/json
+
+{
+    "error": "Study session already has a review"
+}
+```
+
+#### Notes
+
+- The study session's status will be updated to match the review's completion_status
+- Once a review is created for a session, no additional reviews can be added
+- The rating must be an integer between 1 and 5
+- The completion_status must be either 'completed' or 'abandoned'
+- Feedback is optional and can be any text
 
 ## Notes
 - Ensure proper error messages are returned for all validation failures

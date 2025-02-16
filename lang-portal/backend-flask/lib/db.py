@@ -59,6 +59,18 @@ class Db:
     cursor.execute(self.sql('setup/create_table_study_sessions.sql'))
     self.get().commit()
 
+    # Add status column to study_sessions
+    try:
+        cursor.execute('ALTER TABLE study_sessions ADD COLUMN status TEXT CHECK (status IN ("completed", "abandoned"))')
+        self.get().commit()
+    except sqlite3.OperationalError:
+        # Column might already exist, that's fine
+        pass
+
+    # Create study session reviews table
+    cursor.execute(self.sql('setup/create_table_study_session_reviews.sql'))
+    self.get().commit()
+
   def import_study_activities_json(self,cursor,data_json_path):
     study_actvities = self.load_json(data_json_path)
     for activity in study_actvities:

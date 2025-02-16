@@ -193,3 +193,157 @@ def test_create_study_session_invalid_json(client, app):
                          content_type='application/json')
     assert response.status_code == 400
     assert b'No data provided' in response.data
+
+def test_create_study_session_review_success(client, app):
+    """Test successful creation of a study session review"""
+    # First create a test group and study activity
+    cursor = app.db.cursor()
+    cursor.execute('INSERT INTO groups (name) VALUES (?)', ('Test Group',))
+    group_id = cursor.lastrowid
+    
+    cursor.execute('INSERT INTO study_activities (name, url) VALUES (?, ?)', ('Test Activity', 'http://example.com/test'))
+    activity_id = cursor.lastrowid
+    
+    # Create a study session
+    cursor.execute('''
+        INSERT INTO study_sessions (group_id, study_activity_id)
+        VALUES (?, ?)
+    ''', (group_id, activity_id))
+    session_id = cursor.lastrowid
+    app.db.commit()
+    
+    # Test data for review
+    review_data = {
+        'rating': 4,
+        'feedback': 'Great study session!',
+        'completion_status': 'completed'
+    }
+    
+    # Create review
+    response = client.post(
+        f'/api/study-sessions/{session_id}/review',
+        json=review_data,
+        content_type='application/json'
+    )
+    
+    assert response.status_code == 201
+    data = json.loads(response.data)
+    
+    # Verify response data
+    assert data['session_id'] == session_id
+    assert data['rating'] == review_data['rating']
+    assert data['feedback'] == review_data['feedback']
+    assert data['completion_status'] == review_data['completion_status']
+    assert 'created_at' in data
+    
+    # Verify database state
+    cursor.execute('SELECT status FROM study_sessions WHERE id = ?', (session_id,))
+    session = cursor.fetchone()
+    assert session['status'] == review_data['completion_status']
+
+def test_create_study_session_review_nonexistent_session(client, app):
+    """Test review creation for non-existent study session"""
+    review_data = {
+        'rating': 4,
+        'feedback': 'Great session!',
+        'completion_status': 'completed'
+    }
+    
+    response = client.post(
+        '/api/study-sessions/999/review',
+        json=review_data,
+        content_type='application/json'
+    )
+    
+    assert response.status_code == 404
+    data = json.loads(response.data)
+    assert 'error' in data
+    assert 'not found' in data['error'].lower()
+
+def test_create_study_session_review_invalid_data(client, app):
+    """Test review creation with invalid data"""
+    # First create a test session
+    cursor = app.db.cursor()
+    cursor.execute('INSERT INTO groups (name) VALUES (?)', ('Test Group',))
+    group_id = cursor.lastrowid
+    cursor.execute('INSERT INTO study_activities (name, url) VALUES (?, ?)', ('Test Activity', 'http://example.com/test'))
+    activity_id = cursor.lastrowid
+    cursor.execute('''
+        INSERT INTO study_sessions (group_id, study_activity_id)
+        VALUES (?, ?)
+    ''', (group_id, activity_id))
+    session_id = cursor.lastrowid
+    app.db.commit()
+    
+    # Test cases with invalid data
+    invalid_test_cases = [
+        (
+            {'rating': 'invalid', 'completion_status': 'completed'},
+            'Invalid type for field rating'
+        ),
+        (
+            {'rating': 6, 'completion_status': 'completed'},
+            'Rating must be between 1 and 5'
+        ),
+        (
+            {'rating': 4, 'completion_status': 'invalid_status'},
+            'Completion status must be one of'
+        ),
+        (
+            {'completion_status': 'completed'},
+            'Missing required field: rating'
+        )
+    ]
+    
+    for test_data, expected_error in invalid_test_cases:
+        response = client.post(
+            f'/api/study-sessions/{session_id}/review',
+            json=test_data,
+            content_type='application/json'
+        )
+        
+        assert response.status_code == 400
+        data = json.loads(response.data)
+        assert 'error' in data
+        assert expected_error in data['error']
+
+def test_create_study_session_review_duplicate(client, app):
+    """Test attempting to create duplicate review for a session"""
+    # First create a test session
+    cursor = app.db.cursor()
+    cursor.execute('INSERT INTO groups (name) VALUES (?)', ('Test Group',))
+    group_id = cursor.lastrowid
+    cursor.execute('INSERT INTO study_activities (name, url) VALUES (?, ?)', ('Test Activity', 'http://example.com/test'))
+    activity_id = cursor.lastrowid
+    cursor.execute('''
+        INSERT INTO study_sessions (group_id, study_activity_id)
+        VALUES (?, ?)
+    ''', (group_id, activity_id))
+    session_id = cursor.lastrowid
+    app.db.commit()
+    
+    review_data = {
+        'rating': 4,
+        'feedback': 'Great session!',
+        'completion_status': 'completed'
+    }
+    
+    # Create first review
+    response = client.post(
+        f'/api/study-sessions/{session_id}/review',
+        json=review_data,
+        content_type='application/json'
+    )
+    assert response.status_code == 201
+    
+    # Attempt to create second review
+    response = client.post(
+        f'/api/study-sessions/{session_id}/review',
+        json=review_data,
+        content_type='application/json'
+    )
+    
+    assert response.status_code == 409
+    data = json.loads(response.data)
+    assert 'error' in data
+    assert 'already has a review' in data['error']
