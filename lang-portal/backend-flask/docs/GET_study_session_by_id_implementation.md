@@ -27,7 +27,7 @@ This endpoint retrieves details of a specific study session by its ID.
 - 500: Server error
 
 ## Implementation Steps
-1. Validate the study session ID
-2. Query the database for the study session
-3. Format the response
-4. Handle errors
+- [ ] Validate the study session ID
+- [ ] Query the database for the study session
+- [ ] Format the response
+- [ ] Handle errors

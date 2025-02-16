@@ -43,7 +43,7 @@ This endpoint retrieves a paginated list of study sessions.
 - 500: Server error
 
 ## Implementation Steps
-1. Validate pagination parameters
-2. Query the database for study sessions with pagination
-3. Format the response
-4. Handle errors
+- [ ] Validate pagination parameters
+- [ ] Query the database for study sessions with pagination
+- [ ] Format the response
+- [ ] Handle errors

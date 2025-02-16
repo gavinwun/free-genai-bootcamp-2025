@@ -5,8 +5,6 @@ import math
 import sqlite3
 
 def load(app):
-  # todo /study_sessions POST
-
   @app.route('/api/study-sessions', methods=['POST'])
   @cross_origin()
   def create_study_session():
