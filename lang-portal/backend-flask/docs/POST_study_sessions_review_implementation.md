@@ -42,7 +42,7 @@ def create_study_session_review(session_id):
 - [x] Return 404 Not Found if session doesn't exist
 
 ### 3. Database Operations
-- [ ] Create SQL insert statement for study_session_reviews table:
+- [x] Create SQL insert statement for study_session_reviews table:
   ```sql
   INSERT INTO study_session_reviews (
       session_id,
@@ -52,10 +52,10 @@ def create_study_session_review(session_id):
       created_at
   ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
   ```
-- [ ] Execute the insert with proper parameters
-- [ ] Update the study session status in study_sessions table
-- [ ] Get the ID of the newly created review
-- [ ] Fetch the complete review details using the new ID
+- [x] Execute the insert with proper parameters
+- [x] Get the ID of the newly created review
+- [x] Fetch the complete review details using the new ID
+- [x] Update the study session status in study_sessions table
 
 ### 4. Response Formatting
 - [ ] Format the response JSON:

@@ -305,8 +305,67 @@ def load(app):
       if existing_review:
         return jsonify({'error': 'Study session already has a review'}), 409
 
-      # Implementation will continue here
-      pass
+      # Insert the review
+      try:
+          # First update the study session status
+          cursor.execute('''
+            UPDATE study_sessions 
+            SET status = ?
+            WHERE id = ?
+          ''', (data['completion_status'], session_id))
+
+          # Then insert the review
+          cursor.execute('''
+            INSERT INTO study_session_reviews (
+                session_id,
+                rating,
+                feedback,
+                completion_status,
+                created_at
+            ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+          ''', (
+              session_id,
+              data['rating'],
+              data.get('feedback'),  # Optional field
+              data['completion_status']
+          ))
+          
+          # Get the ID of the newly created review
+          new_review_id = cursor.lastrowid
+          
+          # Fetch the complete review details
+          cursor.execute('''
+            SELECT 
+                id,
+                session_id,
+                rating,
+                feedback,
+                completion_status,
+                created_at
+            FROM study_session_reviews
+            WHERE id = ?
+          ''', (new_review_id,))
+          
+          review = cursor.fetchone()
+          app.db.commit()
+
+          if not review:
+              app.db.rollback()
+              return jsonify({'error': 'Failed to create study session review'}), 500
+
+          # Return the newly created review
+          return jsonify({
+              'id': review['id'],
+              'session_id': review['session_id'],
+              'rating': review['rating'],
+              'feedback': review['feedback'],
+              'completion_status': review['completion_status'],
+              'created_at': review['created_at']
+          }), 201
+
+      except sqlite3.IntegrityError as e:
+          app.db.rollback()
+          return jsonify({'error': str(e)}), 400
 
     except Exception as e:
       return jsonify({"error": str(e)}), 500
