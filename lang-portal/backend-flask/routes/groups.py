@@ -155,7 +155,57 @@ def load(app):
     except Exception as e:
       return jsonify({"error": str(e)}), 500
 
-  # todo GET /groups/:id/words/raw
+  @app.route('/groups/<int:id>/words/raw', methods=['GET'])
+  @cross_origin()
+  def get_group_words_raw(id):
+    try:
+      cursor = app.db.cursor()
+      
+      # Check if group exists
+      cursor.execute('SELECT id, name FROM groups WHERE id = ?', (id,))
+      group = cursor.fetchone()
+      
+      if not group:
+        return jsonify({'error': f'Group with id {id} not found'}), 404
+
+      # Fetch all words for the group
+      cursor.execute('''
+        SELECT 
+          w.id,
+          w.word,
+          w.reading,
+          w.meaning,
+          w.part_of_speech,
+          w.level,
+          w.created_at
+        FROM words w
+        JOIN group_words gw ON gw.word_id = w.id
+        WHERE gw.group_id = ?
+        ORDER BY w.word ASC
+      ''', (id,))
+      
+      words = cursor.fetchall()
+      
+      # Format response
+      words_data = [{
+        'id': word['id'],
+        'word': word['word'],
+        'reading': word['reading'],
+        'meaning': word['meaning'],
+        'part_of_speech': word['part_of_speech'],
+        'level': word['level'],
+        'created_at': word['created_at']
+      } for word in words]
+
+      return jsonify({
+        'group_id': group['id'],
+        'group_name': group['name'],
+        'words': words_data,
+        'total_words': len(words_data)
+      })
+      
+    except Exception as e:
+      return jsonify({"error": str(e)}), 500
 
   @app.route('/groups/<int:id>/study_sessions', methods=['GET'])
   @cross_origin()

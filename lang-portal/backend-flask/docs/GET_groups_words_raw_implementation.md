@@ -13,8 +13,8 @@ The endpoint will retrieve all words associated with a specific group in a raw f
 ## Implementation Steps
 
 ### 1. Add the Route
-- [ ] Add the `@app.route` decorator with GET method and URL parameter
-- [ ] Add the `@cross_origin()` decorator for CORS support
+- [x] Add the `@app.route` decorator with GET method and URL parameter
+- [x] Add the `@cross_origin()` decorator for CORS support
 ```python
 @app.route('/groups/<int:id>/words/raw', methods=['GET'])
 @cross_origin()
@@ -24,12 +24,12 @@ def get_group_words_raw(id):
 ```
 
 ### 2. Request Validation
-- [ ] Validate if group_id is valid
-- [ ] Check if group exists
-- [ ] Return 404 Not Found if group doesn't exist
+- [x] Validate if group_id is valid
+- [x] Check if group exists
+- [x] Return 404 Not Found if group doesn't exist
 
 ### 3. Database Operations
-- [ ] Create SQL query to fetch all words for the group:
+- [x] Create SQL query to fetch all words for the group:
   ```sql
   SELECT 
       w.id,
@@ -44,11 +44,11 @@ def get_group_words_raw(id):
   WHERE gw.group_id = ?
   ORDER BY w.word ASC
   ```
-- [ ] Execute the query with proper parameters
-- [ ] Fetch all results
+- [x] Execute the query with proper parameters
+- [x] Fetch all results
 
 ### 4. Response Formatting
-- [ ] Format the response JSON:
+- [x] Format the response JSON:
   ```python
   {
       "group_id": int,
@@ -68,11 +68,11 @@ def get_group_words_raw(id):
       "total_words": int
   }
   ```
-- [ ] Return 200 OK status code with the response
+- [x] Return 200 OK status code with the response
 
 ### 5. Error Handling
-- [ ] Add try-except blocks for database operations
-- [ ] Return appropriate error messages and status codes:
+- [x] Add try-except blocks for database operations
+- [x] Return appropriate error messages and status codes:
   - 404 for group not found
   - 500 for server errors
 
