@@ -172,16 +172,14 @@ def load(app):
       cursor.execute('''
         SELECT 
           w.id,
-          w.word,
-          w.reading,
-          w.meaning,
-          w.part_of_speech,
-          w.level,
-          w.created_at
-        FROM words w
-        JOIN group_words gw ON gw.word_id = w.id
-        WHERE gw.group_id = ?
-        ORDER BY w.word ASC
+          w.kanji,
+          w.romaji,
+          w.english,
+          w.parts
+        FROM word_groups wg
+        JOIN words w ON wg.word_id = w.id
+        WHERE wg.group_id = ?
+        ORDER BY w.kanji ASC
       ''', (id,))
       
       words = cursor.fetchall()
@@ -189,12 +187,10 @@ def load(app):
       # Format response
       words_data = [{
         'id': word['id'],
-        'word': word['word'],
-        'reading': word['reading'],
-        'meaning': word['meaning'],
-        'part_of_speech': word['part_of_speech'],
-        'level': word['level'],
-        'created_at': word['created_at']
+        'kanji': word['kanji'],
+        'romaji': word['romaji'],
+        'english': word['english'],
+        'parts': json.loads(word['parts'])
       } for word in words]
 
       return jsonify({

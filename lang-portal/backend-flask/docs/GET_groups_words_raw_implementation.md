@@ -33,16 +33,14 @@ def get_group_words_raw(id):
   ```sql
   SELECT 
       w.id,
-      w.word,
-      w.reading,
-      w.meaning,
-      w.part_of_speech,
-      w.level,
-      w.created_at
-  FROM words w
-  JOIN group_words gw ON gw.word_id = w.id
-  WHERE gw.group_id = ?
-  ORDER BY w.word ASC
+      w.kanji,
+      w.romaji,
+      w.english,
+      w.parts
+  FROM word_groups wg
+  JOIN words w ON wg.word_id = w.id
+  WHERE wg.group_id = ?
+  ORDER BY w.kanji ASC
   ```
 - [x] Execute the query with proper parameters
 - [x] Fetch all results
@@ -56,12 +54,10 @@ def get_group_words_raw(id):
       "words": [
           {
               "id": int,
-              "word": str,
-              "reading": str,
-              "meaning": str,
-              "part_of_speech": str,
-              "level": str,
-              "created_at": datetime
+              "kanji": str,
+              "romaji": str,
+              "english": str,
+              "parts": object     # parsed JSON object
           },
           ...
       ],
@@ -77,11 +73,11 @@ def get_group_words_raw(id):
   - 500 for server errors
 
 ### 6. Testing
-- [ ] Test with valid group ID
-- [ ] Test with non-existent group ID
-- [ ] Test with empty group (no words)
-- [ ] Test with group containing multiple words
-- [ ] Test error scenarios
+- [x] Test with valid group ID
+- [x] Test with non-existent group ID
+- [x] Test with empty group (no words)
+- [x] Test with group containing multiple words
+- [x] Test error scenarios
 
 ### 7. Documentation
 - [ ] Add API documentation with request/response examples
@@ -115,21 +111,21 @@ Content-Type: application/json
     "words": [
         {
             "id": 1,
-            "word": "今日",
-            "reading": "きょう",
-            "meaning": "today",
-            "part_of_speech": "noun",
-            "level": "N5",
-            "created_at": "2025-02-16T19:39:50+13:00"
+            "kanji": "今日",
+            "romaji": "kyou",
+            "english": "today",
+            "parts": {
+                "type": "noun"
+            }
         },
         {
             "id": 2,
-            "word": "明日",
-            "reading": "あした",
-            "meaning": "tomorrow",
-            "part_of_speech": "noun",
-            "level": "N5",
-            "created_at": "2025-02-16T19:39:50+13:00"
+            "kanji": "明日",
+            "romaji": "ashita",
+            "english": "tomorrow",
+            "parts": {
+                "type": "noun"
+            }
         }
     ],
     "total_words": 2
@@ -161,6 +157,6 @@ Content-Type: application/json
 #### Notes
 
 - This endpoint returns all words without pagination
-- Words are sorted alphabetically by the word field
+- Words are sorted alphabetically by the kanji field
 - For large groups, consider using appropriate database indexing
 - Response includes both group metadata and the complete list of words
