@@ -255,7 +255,61 @@ def load(app):
     except Exception as e:
       return jsonify({"error": str(e)}), 500
 
-  # todo POST /study_sessions/:id/review
+  @app.route('/api/study-sessions/<int:session_id>/review', methods=['POST'])
+  @cross_origin()
+  def create_study_session_review(session_id):
+    try:
+      # Validate request format
+      if not request.is_json:
+        return jsonify({'error': 'Content-Type must be application/json'}), 400
+      
+      try:
+        data = request.get_json()
+      except:
+        return jsonify({'error': 'Invalid JSON data'}), 400
+        
+      if data is None:
+        return jsonify({'error': 'No data provided'}), 400
+
+      # Define required fields and their types
+      required_fields = {
+          'rating': int,
+          'completion_status': str
+      }
+      
+      # Check if session exists
+      cursor = app.db.cursor()
+      cursor.execute('SELECT id FROM study_sessions WHERE id = ?', (session_id,))
+      session = cursor.fetchone()
+      if not session:
+        return jsonify({'error': f'Study session with id {session_id} not found'}), 404
+
+      # Validate required fields
+      for field, field_type in required_fields.items():
+        if field not in data:
+          return jsonify({'error': f'Missing required field: {field}'}), 400
+        if not isinstance(data[field], field_type):
+          return jsonify({'error': f'Invalid type for field {field}. Expected {field_type.__name__}'}), 400
+
+      # Validate field values
+      if not 1 <= data['rating'] <= 5:
+        return jsonify({'error': 'Rating must be between 1 and 5'}), 400
+
+      valid_statuses = ['completed', 'abandoned']
+      if data['completion_status'] not in valid_statuses:
+        return jsonify({'error': f'Completion status must be one of: {", ".join(valid_statuses)}'}), 400
+
+      # Check if session already has a review
+      cursor.execute('SELECT id FROM study_session_reviews WHERE session_id = ?', (session_id,))
+      existing_review = cursor.fetchone()
+      if existing_review:
+        return jsonify({'error': 'Study session already has a review'}), 409
+
+      # Implementation will continue here
+      pass
+
+    except Exception as e:
+      return jsonify({"error": str(e)}), 500
 
   @app.route('/api/study-sessions/reset', methods=['POST'])
   @cross_origin()

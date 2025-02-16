@@ -13,8 +13,8 @@ The endpoint will create a review for a specific study session. It will be acces
 ## Implementation Steps
 
 ### 1. Add the Route
-- [ ] Add the `@app.route` decorator with POST method and URL parameter
-- [ ] Add the `@cross_origin()` decorator for CORS support
+- [x] Add the `@app.route` decorator with POST method and URL parameter
+- [x] Add the `@cross_origin()` decorator for CORS support
 ```python
 @app.route('/api/study-sessions/<int:session_id>/review', methods=['POST'])
 @cross_origin()
@@ -24,7 +24,7 @@ def create_study_session_review(session_id):
 ```
 
 ### 2. Request Validation
-- [ ] Add validation for required fields in request body:
+- [x] Add validation for required fields in request body:
   ```python
   required_fields = {
       'rating': int,  # Rating score for the session
@@ -32,14 +32,14 @@ def create_study_session_review(session_id):
       'completion_status': str  # Status of the study session (completed/abandoned)
   }
   ```
-- [ ] Check if study session exists
-- [ ] Validate if session_id is valid
-- [ ] Check if all required fields are present
-- [ ] Validate field types and value ranges
+- [x] Check if study session exists
+- [x] Validate if session_id is valid
+- [x] Check if all required fields are present
+- [x] Validate field types and value ranges
   - Rating should be between 1-5
   - Completion status should be one of the valid values
-- [ ] Return 400 Bad Request if validation fails
-- [ ] Return 404 Not Found if session doesn't exist
+- [x] Return 400 Bad Request if validation fails
+- [x] Return 404 Not Found if session doesn't exist
 
 ### 3. Database Operations
 - [ ] Create SQL insert statement for study_session_reviews table:
